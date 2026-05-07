@@ -1,3 +1,13 @@
+<!-- daizhouchen-banner-begin -->
+<p align="center">
+  <img src="assets/hero.png" alt="openclaw-skills" width="100%"/>
+</p>
+
+> **11 days, 11 skills — 一次集中实验。10 个 Claude Code Skill 合集。**
+>
+> *an 11-day burst of skill experiments — 10 archived in this monorepo.*
+<!-- daizhouchen-banner-end -->
+
 # openclaw-skills
 
 > 11 days, 11 skills — 2026 年 3 月 31 日开始的一次集中实验。
@@ -36,3 +46,9 @@
 ## License
 
 MIT
+
+---
+<!-- daizhouchen-footer-begin -->
+
+Part of [**daizhouchen 实验集**](https://github.com/daizhouchen) → 一个 AI 应用创造者的实验现场。
+<!-- daizhouchen-footer-end -->
