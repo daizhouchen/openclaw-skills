@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Codebase Cartographer - Architecture Map</title>
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #0d1117;
+    color: #c9d1d9;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, monospace;
+    overflow: hidden;
+    display: flex;
+    height: 100vh;
+  }
+  #graph-container {
+    flex: 1;
+    position: relative;
+  }
+  svg { width: 100%; height: 100%; }
+
+  /* Sidebar */
+  #sidebar {
+    width: 340px;
+    background: #161b22;
+    border-left: 1px solid #30363d;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+  }
+  #sidebar h2 {
+    padding: 16px;
+    font-size: 14px;
+    color: #58a6ff;
+    border-bottom: 1px solid #30363d;
+  }
+  .sidebar-section {
+    padding: 12px 16px;
+    border-bottom: 1px solid #21262d;
+  }
+  .sidebar-section h3 {
+    font-size: 12px;
+    text-transform: uppercase;
+    color: #8b949e;
+    margin-bottom: 8px;
+  }
+  .stat-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 4px 0;
+    font-size: 13px;
+  }
+  .stat-label { color: #8b949e; }
+  .stat-value { color: #c9d1d9; font-weight: 600; }
+  .stat-value.circular { color: #f85149; }
+  .stat-value.hub { color: #d2a8ff; }
+  .stat-value.orchestrator { color: #79c0ff; }
+
+  /* Search */
+  #search-box {
+    width: 100%;
+    padding: 8px 12px;
+    background: #0d1117;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    color: #c9d1d9;
+    font-size: 13px;
+    outline: none;
+  }
+  #search-box:focus { border-color: #58a6ff; }
+  #search-results {
+    max-height: 200px;
+    overflow-y: auto;
+    margin-top: 8px;
+  }
+  .search-item {
+    padding: 6px 8px;
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 12px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .search-item:hover { background: #21262d; }
+
+  /* Node info panel */
+  #node-info {
+    display: none;
+  }
+  #node-info.active { display: block; }
+  #node-info .filename {
+    color: #58a6ff;
+    font-size: 14px;
+    font-weight: 600;
+    word-break: break-all;
+    margin-bottom: 8px;
+  }
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    margin: 2px;
+  }
+  .badge-lang { background: #1f6feb33; color: #58a6ff; }
+  .badge-circular { background: #f8514933; color: #f85149; }
+  .badge-hub { background: #d2a8ff33; color: #d2a8ff; }
+  .badge-orchestrator { background: #79c0ff33; color: #79c0ff; }
+  .dep-list {
+    list-style: none;
+    max-height: 150px;
+    overflow-y: auto;
+    margin-top: 4px;
+  }
+  .dep-list li {
+    font-size: 12px;
+    padding: 2px 0;
+    color: #8b949e;
+    cursor: pointer;
+  }
+  .dep-list li:hover { color: #58a6ff; }
+
+  /* Legend */
+  .legend-item {
+    display: flex;
+    align-items: center;
+    padding: 3px 0;
+    font-size: 12px;
+  }
+  .legend-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    margin-right: 8px;
+    flex-shrink: 0;
+  }
+
+  /* Tooltip */
+  #tooltip {
+    position: absolute;
+    background: #1c2128;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 12px;
+    pointer-events: none;
+    display: none;
+    z-index: 100;
+    max-width: 300px;
+  }
+  #tooltip .tt-file { color: #58a6ff; font-weight: 600; }
+  #tooltip .tt-detail { color: #8b949e; margin-top: 4px; }
+
+  /* Header overlay */
+  #header {
+    position: absolute;
+    top: 12px; left: 12px;
+    background: #161b22cc;
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: 1px solid #30363d;
+    font-size: 13px;
+    z-index: 10;
+  }
+  #header strong { color: #58a6ff; }
+</style>
+</head>
+<body>
+
+<div id="graph-container">
+  <div id="header">
+    <strong>Codebase Cartographer</strong> &mdash; <span id="header-info">Loading...</span>
+  </div>
+  <svg id="graph"></svg>
+  <div id="tooltip">
+    <div class="tt-file"></div>
+    <div class="tt-detail"></div>
+  </div>
+</div>
+
+<div id="sidebar">
+  <h2>Architecture Map</h2>
+
+  <div class="sidebar-section">
+    <h3>Search</h3>
+    <input type="text" id="search-box" placeholder="Search files...">
+    <div id="search-results"></div>
+  </div>
+
+  <div class="sidebar-section">
+    <h3>Statistics</h3>
+    <div class="stat-row"><span class="stat-label">Nodes</span><span class="stat-value" id="stat-nodes">-</span></div>
+    <div class="stat-row"><span class="stat-label">Edges</span><span class="stat-value" id="stat-edges">-</span></div>
+    <div class="stat-row"><span class="stat-label">Circular Deps</span><span class="stat-value circular" id="stat-circular">-</span></div>
+    <div class="stat-row"><span class="stat-label">Hub Modules</span><span class="stat-value hub" id="stat-hubs">-</span></div>
+    <div class="stat-row"><span class="stat-label">Orchestrators</span><span class="stat-value orchestrator" id="stat-orch">-</span></div>
+    <div class="stat-row"><span class="stat-label">Islands</span><span class="stat-value" id="stat-islands">-</span></div>
+  </div>
+
+  <div class="sidebar-section" id="node-info">
+    <h3>Selected Node</h3>
+    <div class="filename" id="info-filename"></div>
+    <div id="info-badges"></div>
+    <div class="stat-row"><span class="stat-label">Lines</span><span class="stat-value" id="info-lines">-</span></div>
+    <div class="stat-row"><span class="stat-label">In-degree</span><span class="stat-value" id="info-indeg">-</span></div>
+    <div class="stat-row"><span class="stat-label">Out-degree</span><span class="stat-value" id="info-outdeg">-</span></div>
+    <div style="margin-top:8px">
+      <h3>Dependencies (imports)</h3>
+      <ul class="dep-list" id="info-deps-out"></ul>
+    </div>
+    <div style="margin-top:8px">
+      <h3>Dependents (imported by)</h3>
+      <ul class="dep-list" id="info-deps-in"></ul>
+    </div>
+  </div>
+
+  <div class="sidebar-section">
+    <h3>Legend (by directory)</h3>
+    <div id="legend"></div>
+    <div class="legend-item" style="margin-top:8px">
+      <div class="legend-dot" style="background:#f85149"></div>
+      <span>Circular dependency</span>
+    </div>
+  </div>
+</div>
+
+<script>
+/*__GRAPH_DATA__*/
+
+(function() {
+  if (typeof GRAPH_DATA === 'undefined') {
+    document.getElementById('header-info').textContent = 'No data loaded';
+    return;
+  }
+
+  const data = GRAPH_DATA;
+  const nodes = data.nodes;
+  const edges = data.edges;
+
+  // Stats
+  document.getElementById('stat-nodes').textContent = data.total_nodes;
+  document.getElementById('stat-edges').textContent = data.total_edges;
+  document.getElementById('stat-circular').textContent = data.circular_dependencies.length;
+  document.getElementById('stat-hubs').textContent = data.hubs.length;
+  document.getElementById('stat-orch').textContent = data.orchestrators.length;
+  document.getElementById('stat-islands').textContent = data.islands.length;
+  document.getElementById('header-info').textContent =
+    `${data.total_nodes} modules, ${data.total_edges} dependencies`;
+
+  // Color by directory
+  const dirs = [...new Set(nodes.map(n => n.directory))].sort();
+  const colorScale = d3.scaleOrdinal(d3.schemeTableau10).domain(dirs);
+
+  // Legend
+  const legendEl = document.getElementById('legend');
+  dirs.forEach(d => {
+    const item = document.createElement('div');
+    item.className = 'legend-item';
+    item.innerHTML = `<div class="legend-dot" style="background:${colorScale(d)}"></div><span>${d}</span>`;
+    legendEl.appendChild(item);
+  });
+
+  // Size scale
+  const maxDeg = Math.max(1, d3.max(nodes, n => n.total_degree));
+  const sizeScale = d3.scaleSqrt().domain([0, maxDeg]).range([4, 20]);
+
+  // SVG setup
+  const svg = d3.select('#graph');
+  const container = document.getElementById('graph-container');
+  const width = container.clientWidth;
+  const height = container.clientHeight;
+
+  const g = svg.append('g');
+
+  // Zoom
+  const zoom = d3.zoom()
+    .scaleExtent([0.1, 8])
+    .on('zoom', (event) => g.attr('transform', event.transform));
+  svg.call(zoom);
+
+  // Arrow markers
+  svg.append('defs').selectAll('marker')
+    .data(['normal', 'circular'])
+    .join('marker')
+    .attr('id', d => `arrow-${d}`)
+    .attr('viewBox', '0 -5 10 10')
+    .attr('refX', 20)
+    .attr('refY', 0)
+    .attr('markerWidth', 6)
+    .attr('markerHeight', 6)
+    .attr('orient', 'auto')
+    .append('path')
+    .attr('d', 'M0,-5L10,0L0,5')
+    .attr('fill', d => d === 'circular' ? '#f85149' : '#30363d');
+
+  // Build node index
+  const nodeById = {};
+  nodes.forEach(n => { nodeById[n.id] = n; });
+
+  // Build adjacency for click info
+  const outEdges = {};
+  const inEdges = {};
+  edges.forEach(e => {
+    if (!outEdges[e.source]) outEdges[e.source] = [];
+    outEdges[e.source].push(e.target);
+    if (!inEdges[e.target]) inEdges[e.target] = [];
+    inEdges[e.target].push(e.source);
+  });
+
+  // Simulation
+  const simulation = d3.forceSimulation(nodes)
+    .force('link', d3.forceLink(edges).id(d => d.id).distance(80))
+    .force('charge', d3.forceManyBody().strength(-200))
+    .force('center', d3.forceCenter(width / 2, height / 2))
+    .force('collision', d3.forceCollide().radius(d => sizeScale(d.total_degree) + 2));
+
+  // Links
+  const link = g.append('g')
+    .selectAll('line')
+    .data(edges)
+    .join('line')
+    .attr('stroke', d => d.circular ? '#f85149' : '#30363d')
+    .attr('stroke-width', d => d.circular ? 2 : 1)
+    .attr('stroke-opacity', d => d.circular ? 0.8 : 0.4)
+    .attr('marker-end', d => `url(#arrow-${d.circular ? 'circular' : 'normal'})`);
+
+  // Nodes
+  const node = g.append('g')
+    .selectAll('circle')
+    .data(nodes)
+    .join('circle')
+    .attr('r', d => sizeScale(d.total_degree))
+    .attr('fill', d => d.is_circular ? '#f85149' : colorScale(d.directory))
+    .attr('stroke', d => d.is_circular ? '#f8514966' : '#ffffff22')
+    .attr('stroke-width', d => d.is_circular ? 3 : 1)
+    .attr('cursor', 'pointer')
+    .call(d3.drag()
+      .on('start', dragStart)
+      .on('drag', dragging)
+      .on('end', dragEnd));
+
+  // Labels (only for high-degree nodes)
+  const label = g.append('g')
+    .selectAll('text')
+    .data(nodes.filter(n => n.total_degree >= 2))
+    .join('text')
+    .text(d => {
+      const parts = d.id.split('/');
+      return parts[parts.length - 1];
+    })
+    .attr('font-size', 10)
+    .attr('fill', '#8b949e')
+    .attr('dx', d => sizeScale(d.total_degree) + 4)
+    .attr('dy', 3)
+    .style('pointer-events', 'none');
+
+  // Tooltip
+  const tooltip = document.getElementById('tooltip');
+  const ttFile = tooltip.querySelector('.tt-file');
+  const ttDetail = tooltip.querySelector('.tt-detail');
+
+  node.on('mouseover', (event, d) => {
+    tooltip.style.display = 'block';
+    ttFile.textContent = d.id;
+    ttDetail.textContent = `${d.language} | ${d.lines} lines | in:${d.in_degree} out:${d.out_degree}`;
+  })
+  .on('mousemove', (event) => {
+    tooltip.style.left = (event.offsetX + 12) + 'px';
+    tooltip.style.top = (event.offsetY - 10) + 'px';
+  })
+  .on('mouseout', () => {
+    tooltip.style.display = 'none';
+  });
+
+  // Click to select
+  let selectedNode = null;
+  node.on('click', (event, d) => {
+    event.stopPropagation();
+    selectedNode = d;
+    showNodeInfo(d);
+    highlightNode(d);
+  });
+  svg.on('click', () => {
+    selectedNode = null;
+    document.getElementById('node-info').classList.remove('active');
+    resetHighlight();
+  });
+
+  function showNodeInfo(d) {
+    const panel = document.getElementById('node-info');
+    panel.classList.add('active');
+    document.getElementById('info-filename').textContent = d.id;
+    document.getElementById('info-lines').textContent = d.lines;
+    document.getElementById('info-indeg').textContent = d.in_degree;
+    document.getElementById('info-outdeg').textContent = d.out_degree;
+
+    const badges = document.getElementById('info-badges');
+    badges.innerHTML = '';
+    badges.innerHTML += `<span class="badge badge-lang">${d.language}</span>`;
+    if (d.is_circular) badges.innerHTML += `<span class="badge badge-circular">Circular</span>`;
+    if (data.hubs.includes(d.id)) badges.innerHTML += `<span class="badge badge-hub">Hub</span>`;
+    if (data.orchestrators.includes(d.id)) badges.innerHTML += `<span class="badge badge-orchestrator">Orchestrator</span>`;
+
+    const depsOut = document.getElementById('info-deps-out');
+    depsOut.innerHTML = '';
+    (outEdges[d.id] || []).forEach(t => {
+      const li = document.createElement('li');
+      li.textContent = typeof t === 'object' ? t.id : t;
+      li.onclick = () => {
+        const target = nodes.find(n => n.id === (typeof t === 'object' ? t.id : t));
+        if (target) { showNodeInfo(target); highlightNode(target); }
+      };
+      depsOut.appendChild(li);
+    });
+
+    const depsIn = document.getElementById('info-deps-in');
+    depsIn.innerHTML = '';
+    (inEdges[d.id] || []).forEach(s => {
+      const li = document.createElement('li');
+      li.textContent = typeof s === 'object' ? s.id : s;
+      li.onclick = () => {
+        const source = nodes.find(n => n.id === (typeof s === 'object' ? s.id : s));
+        if (source) { showNodeInfo(source); highlightNode(source); }
+      };
+      depsIn.appendChild(li);
+    });
+  }
+
+  function highlightNode(d) {
+    const connected = new Set();
+    connected.add(d.id);
+    (outEdges[d.id] || []).forEach(t => connected.add(typeof t === 'object' ? t.id : t));
+    (inEdges[d.id] || []).forEach(s => connected.add(typeof s === 'object' ? s.id : s));
+
+    node.attr('opacity', n => connected.has(n.id) ? 1 : 0.15);
+    link.attr('opacity', e => {
+      const sid = typeof e.source === 'object' ? e.source.id : e.source;
+      const tid = typeof e.target === 'object' ? e.target.id : e.target;
+      return (sid === d.id || tid === d.id) ? 0.8 : 0.05;
+    });
+    label.attr('opacity', n => connected.has(n.id) ? 1 : 0.1);
+  }
+
+  function resetHighlight() {
+    node.attr('opacity', 1);
+    link.attr('opacity', d => d.circular ? 0.8 : 0.4);
+    label.attr('opacity', 1);
+  }
+
+  // Search
+  const searchBox = document.getElementById('search-box');
+  const searchResults = document.getElementById('search-results');
+  searchBox.addEventListener('input', () => {
+    const q = searchBox.value.toLowerCase();
+    searchResults.innerHTML = '';
+    if (!q) return;
+    const matches = nodes.filter(n => n.id.toLowerCase().includes(q)).slice(0, 20);
+    matches.forEach(n => {
+      const div = document.createElement('div');
+      div.className = 'search-item';
+      div.textContent = n.id;
+      div.onclick = () => {
+        showNodeInfo(n);
+        highlightNode(n);
+        // Pan to node
+        const transform = d3.zoomTransform(svg.node());
+        const x = n.x, y = n.y;
+        svg.transition().duration(500).call(
+          zoom.transform,
+          d3.zoomIdentity.translate(width/2 - x * transform.k, height/2 - y * transform.k).scale(transform.k)
+        );
+      };
+      searchResults.appendChild(div);
+    });
+  });
+
+  // Tick
+  simulation.on('tick', () => {
+    link
+      .attr('x1', d => d.source.x)
+      .attr('y1', d => d.source.y)
+      .attr('x2', d => d.target.x)
+      .attr('y2', d => d.target.y);
+    node
+      .attr('cx', d => d.x)
+      .attr('cy', d => d.y);
+    label
+      .attr('x', d => d.x)
+      .attr('y', d => d.y);
+  });
+
+  // Drag
+  function dragStart(event, d) {
+    if (!event.active) simulation.alphaTarget(0.3).restart();
+    d.fx = d.x; d.fy = d.y;
+  }
+  function dragging(event, d) {
+    d.fx = event.x; d.fy = event.y;
+  }
+  function dragEnd(event, d) {
+    if (!event.active) simulation.alphaTarget(0);
+    d.fx = null; d.fy = null;
+  }
+
+  // Initial zoom to fit
+  simulation.on('end', () => {
+    const bounds = g.node().getBBox();
+    if (bounds.width > 0 && bounds.height > 0) {
+      const scale = Math.min(
+        0.9 * width / bounds.width,
+        0.9 * height / bounds.height,
+        2
+      );
+      const tx = width / 2 - (bounds.x + bounds.width / 2) * scale;
+      const ty = height / 2 - (bounds.y + bounds.height / 2) * scale;
+      svg.transition().duration(750).call(
+        zoom.transform,
+        d3.zoomIdentity.translate(tx, ty).scale(scale)
+      );
+    }
+  });
+})();
+</script>
+</body>
+</html>
