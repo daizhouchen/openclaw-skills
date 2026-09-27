@@ -5,6 +5,8 @@ Analyzes CSV/JSON data files and outputs structured findings as JSON.
 """
 
 import sys
+import argparse
+import tempfile
 import json
 import os
 import warnings
@@ -15,7 +17,7 @@ import numpy as np
 
 warnings.filterwarnings("ignore")
 
-OUTPUT_PATH = "/tmp/data_detective_findings.json"
+OUTPUT_PATH = str(Path(tempfile.gettempdir()) / "data_detective_findings.json")
 
 
 def load_data(filepath: str) -> pd.DataFrame:
@@ -321,11 +323,11 @@ def build_summary(scene: dict, fingerprint: dict, anomalies: dict, correlations:
 # Main
 # ---------------------------------------------------------------------------
 def main():
-    if len(sys.argv) < 2:
-        print("Usage: python investigate.py <data_file>", file=sys.stderr)
-        sys.exit(1)
-
-    filepath = sys.argv[1]
+    parser = argparse.ArgumentParser(description="Analyze a data file for quality issues.")
+    parser.add_argument("data_file")
+    parser.add_argument("-o", "--output", default=OUTPUT_PATH)
+    args = parser.parse_args()
+    filepath = args.data_file
     if not os.path.isfile(filepath):
         print(f"File not found: {filepath}", file=sys.stderr)
         sys.exit(1)
@@ -358,10 +360,10 @@ def main():
         "summary": summary,
     }
 
-    with open(OUTPUT_PATH, "w", encoding="utf-8") as f:
+    with open(args.output, "w", encoding="utf-8") as f:
         json.dump(report, f, ensure_ascii=False, indent=2)
 
-    print(f"[Data Detective] Findings saved to {OUTPUT_PATH}")
+    print(f"[Data Detective] Findings saved to {args.output}")
     print(f"[Data Detective] Top findings:")
     for i, finding in enumerate(summary["top_findings"][:3], 1):
         print(f"  {i}. [{finding['severity'].upper()}] {finding['title']}")

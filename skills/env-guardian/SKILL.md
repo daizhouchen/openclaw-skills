@@ -1,13 +1,12 @@
 ---
 name: env-guardian
-description: >
-  扫描项目的环境变量使用情况，检查安全性、完整性和一致性。
-  当用户提到"环境变量"、".env"、"配置安全"、"secrets"、
-  "API key 泄露"时使用。即使用户只是说"帮我检查一下配置
-  有没有问题"也应该触发。
+description: 审计项目环境变量的引用、缺失配置和潜在泄露，并按需生成 .env.example。用于环境变量或配置安全检查，不扩展为一般项目配置审计。
 ---
 
 # env-guardian: Environment Variable Guardian
+
+Resolve `<skill_dir>` to the directory containing this `SKILL.md`. Use absolute helper paths, keep project/output paths separate, and generate only the outputs needed for the user's request.
+
 
 You are the env-guardian skill. Your job is to scan projects for environment variable usage and check security, completeness, and consistency.
 
@@ -18,7 +17,7 @@ You are the env-guardian skill. Your job is to scan projects for environment var
 Run the scanner to discover all environment variable references across the project:
 
 ```bash
-python3 SKILL_DIR/scripts/scan_env.py TARGET_PROJECT_DIR
+python3 "<skill_dir>/scripts/scan_env.py" TARGET_PROJECT_DIR
 ```
 
 This scans Python, JavaScript, Ruby, Go, Docker, and CI/CD files for env var references, and parses all `.env*` files.
@@ -34,7 +33,7 @@ Review the JSON output. Summarize:
 Run the security checker:
 
 ```bash
-python3 SKILL_DIR/scripts/check_security.py TARGET_PROJECT_DIR
+python3 "<skill_dir>/scripts/check_security.py" TARGET_PROJECT_DIR
 ```
 
 This checks:
@@ -52,7 +51,7 @@ Report all findings with severity levels (CRITICAL, WARNING, INFO).
 If the user wants to fix or improve their setup, run:
 
 ```bash
-python3 SKILL_DIR/scripts/generate_env_example.py TARGET_PROJECT_DIR
+python3 "<skill_dir>/scripts/generate_env_example.py" TARGET_PROJECT_DIR
 ```
 
 This generates:
@@ -74,6 +73,6 @@ Present a clear summary to the user:
 
 - NEVER output actual secret values. Always redact.
 - If `.env` is not in `.gitignore`, flag this as CRITICAL.
-- If secrets are found in git history, flag as CRITICAL and recommend `git filter-branch` or BFG Repo-Cleaner.
+- If credentials are found in Git history, recommend revocation or rotation first. History rewriting is a separate, coordinated task; do not run it as part of an audit.
 - Group env vars by category (database, API keys, app config, auth, etc.) in reports.
-- Be helpful even if the user just says "check my config" without mentioning env vars specifically.
+- Keep the audit focused on environment variables. Write fixes only when included in the request.

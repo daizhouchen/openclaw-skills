@@ -1,12 +1,12 @@
 ---
 name: terminal-dashboard
-description: >
-  生成基于终端的实时数据仪表盘，可监控系统资源、项目状态、
-  API 健康度等。当用户提到"终端仪表盘"、"CLI dashboard"、
-  "命令行监控"、"系统状态"时使用。
+description: 根据 YAML 配置生成 Rich 终端仪表盘，显示系统资源或指定服务指标。用于创建或修改终端监控界面。
 ---
 
 # Terminal Dashboard Skill
+
+Resolve `<skill_dir>` to the directory containing this `SKILL.md`. Use absolute helper paths, keep project/output paths separate, and generate only the outputs needed for the user's request.
+
 
 ## Workflow
 
@@ -20,14 +20,14 @@ Identify what the user wants to monitor. Common categories:
 - **Custom metrics**: API response times, error rates, queue depths
 - **Logs**: Tailing log files or journal entries
 
-Ask the user which data sources matter. If unclear, default to system resource monitoring.
+Use the specified data sources. Clarify missing requirements before adding service or network checks.
 
 ### Step 2: Generate Dashboard Script
 
 Use `scripts/generate_dashboard.py` to produce a standalone dashboard from a YAML config:
 
 ```bash
-python3 scripts/generate_dashboard.py <config.yaml> --output <dashboard.py>
+python3 "<skill_dir>/scripts/generate_dashboard.py" <config.yaml> --output <dashboard.py>
 ```
 
 The generator reads the config and emits a self-contained Python script that uses
@@ -56,19 +56,14 @@ A default config template lives at `assets/config_template.yaml`.
 python3 <generated_dashboard.py>
 ```
 
-Keyboard shortcuts while running:
-- `q` -- quit
-- `r` -- force refresh
-- `h` -- show help overlay
-
-Ctrl+C also triggers a graceful shutdown.
+Use Ctrl+C to stop the dashboard. Do not leave a continuous monitor running unless requested.
 
 ### Quick Start (no config needed)
 
 Run the bundled example dashboard directly:
 
 ```bash
-python3 scripts/dashboard_example.py
+python3 "<skill_dir>/scripts/dashboard_example.py"
 ```
 
 This shows CPU, memory, disk, load average, and top processes out of the box.

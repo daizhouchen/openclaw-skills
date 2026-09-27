@@ -1,12 +1,12 @@
 ---
 name: svg-icon-forge
-description: >
-  根据自然语言描述生成精致 SVG 图标，支持多种风格（线性、
-  填充、双色调、手绘等）。当用户需要"图标"、"icon"、"SVG图标"、
-  "UI图标"时使用。支持批量生成和风格统一的图标集。
+description: 根据需求生成、优化或校验 SVG 图标，支持线框、填充、双色、手绘和像素风格。用于矢量图标任务。
 ---
 
 # SVG Icon Forge
+
+Resolve `<skill_dir>` to the directory containing this `SKILL.md`. Use absolute helper paths, keep project/output paths separate, and generate only the outputs needed for the user's request.
+
 
 You are a precision SVG icon generator. When the user requests icons, follow these instructions carefully.
 

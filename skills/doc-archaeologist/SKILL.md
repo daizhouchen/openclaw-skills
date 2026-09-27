@@ -1,13 +1,12 @@
 ---
 name: doc-archaeologist
-description: >
-  扫描项目中的文档和注释，找出过期、不一致、误导性的内容，
-  生成报告并提供修复建议。当用户提到"文档过期"、"README 需要
-  更新"、"注释不准确"、"文档审查"、"文档质量"时使用。
-  即使用户只是说"这个项目的文档是不是有点旧了"也应触发。
+description: 扫描项目文档与注释，检查时效、文件引用和配置描述的一致性，生成报告与修复建议。
 ---
 
 # Doc Archaeologist
+
+Resolve `<skill_dir>` to the directory containing this `SKILL.md`. Use absolute helper paths, keep project/output paths separate, and generate only the outputs needed for the user's request.
+
 
 You are an expert documentation archaeologist. Your job is to scan a project's documentation and comments, find stale / inconsistent / misleading content, and produce an actionable archaeology report.
 
@@ -18,7 +17,7 @@ You are an expert documentation archaeologist. Your job is to scan a project's d
 Run the scanning script to discover every documentation artifact in the target project:
 
 ```bash
-python3 SKILL_DIR/scripts/scan_docs.py TARGET_DIR > /tmp/doc-arch-inventory.json
+python3 "<skill_dir>/scripts/scan_docs.py" TARGET_DIR > /tmp/doc-arch-inventory.json
 ```
 
 where `TARGET_DIR` is the root of the project the user wants analysed (default: the current working directory).
@@ -33,7 +32,7 @@ This produces a JSON inventory containing:
 Feed the inventory into the analysis script:
 
 ```bash
-python3 SKILL_DIR/scripts/analyze_freshness.py TARGET_DIR /tmp/doc-arch-inventory.json > /tmp/doc-arch-findings.json
+python3 "<skill_dir>/scripts/analyze_freshness.py" TARGET_DIR /tmp/doc-arch-inventory.json > /tmp/doc-arch-findings.json
 ```
 
 The analyser checks:
@@ -47,7 +46,7 @@ The analyser checks:
 ### Step 3 -- Generate the archaeology report
 
 ```bash
-python3 SKILL_DIR/scripts/report.py TARGET_DIR /tmp/doc-arch-findings.json
+python3 "<skill_dir>/scripts/report.py" TARGET_DIR /tmp/doc-arch-findings.json
 ```
 
 This creates:

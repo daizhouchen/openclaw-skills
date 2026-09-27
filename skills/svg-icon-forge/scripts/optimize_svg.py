@@ -7,6 +7,8 @@ Usage:
     python optimize_svg.py --validate <input.svg>     # validate only
 """
 
+from __future__ import annotations
+
 import argparse
 import re
 import sys
@@ -52,8 +54,10 @@ def strip_redundant_attrs(element: ET.Element) -> None:
     """Remove editor metadata and redundant attributes recursively."""
     keys_to_remove = []
     for key in element.attrib:
-        local = key.split("}")[-1] if "}" in key else key
-        if local in STRIP_ATTRS:
+        namespace, local = key[1:].split("}", 1) if key.startswith("{") else ("", key)
+        if (namespace in STRIP_NS_URIS
+                or key == "{http://www.w3.org/XML/1998/namespace}space"
+                or local in STRIP_ATTRS):
             keys_to_remove.append(key)
             continue
         for prefix in STRIP_ATTR_PREFIXES:
@@ -76,8 +80,13 @@ def strip_editor_elements(element: ET.Element) -> None:
         ):
             # Keep <defs> only if it has children
             if tag == "defs" and len(child) > 0:
+                strip_editor_elements(child)
+                if len(child) == 0:
+                    removals.append(child)
                 continue
             removals.append(child)
+        else:
+            strip_editor_elements(child)
     for child in removals:
         element.remove(child)
 

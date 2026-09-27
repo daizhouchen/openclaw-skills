@@ -1,13 +1,12 @@
 ---
 name: codebase-cartographer
-description: >
-  扫描代码仓库生成交互式架构地图，展示模块依赖、调用链、
-  核心入口点和代码热区。当用户提到"代码架构"、"项目结构"、
-  "依赖关系"、"代码地图"、"帮我看懂这个项目"时使用。
-  即使用户只是说"这个仓库好大我不知道从哪里看起"也应触发。
+description: 扫描仓库文件与静态 import 依赖，生成交互式代码地图。用于仓库结构和模块依赖可视化；不提供运行时调用链。
 ---
 
 # Codebase Cartographer
+
+Resolve `<skill_dir>` to the directory containing this `SKILL.md`. Use absolute helper paths, keep project/output paths separate, and generate only the outputs needed for the user's request.
+
 
 Generate an interactive architecture map for any code repository.
 
@@ -18,7 +17,7 @@ Generate an interactive architecture map for any code repository.
 Run the scan script to collect file metadata, detect the project type, and gather statistics.
 
 ```bash
-python3 {SKILL_DIR}/scripts/scan.py <target_directory> [--output <scan_output.json>] [--exclude dir1,dir2]
+python3 "<skill_dir>/scripts/scan.py" <target_directory> [--output <scan_output.json>] [--exclude dir1,dir2]
 ```
 
 - `<target_directory>`: The root of the repository to scan.
@@ -36,7 +35,7 @@ The scan produces a JSON file containing:
 Run the dependency analyzer on the scan output to build a dependency graph.
 
 ```bash
-python3 {SKILL_DIR}/scripts/analyze_deps.py [--scan <scan_output.json>] [--output <deps_output.json>]
+python3 "<skill_dir>/scripts/analyze_deps.py" [--scan <scan_output.json>] [--output <deps_output.json>]
 ```
 
 - `--scan`: Path to the scan JSON from Step 1 (default: `carto_scan.json`).
@@ -79,7 +78,7 @@ After generating the map, explain the architecture to the user:
 To run the full pipeline:
 
 ```bash
-python3 {SKILL_DIR}/scripts/scan.py <target_dir> && python3 {SKILL_DIR}/scripts/analyze_deps.py
+python3 "<skill_dir>/scripts/scan.py" <target_dir> && python3 "<skill_dir>/scripts/analyze_deps.py"
 ```
 
 Then open `carto_map.html` in a browser or provide the path to the user.

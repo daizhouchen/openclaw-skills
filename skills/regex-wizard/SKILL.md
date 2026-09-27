@@ -1,13 +1,12 @@
 ---
 name: regex-wizard
-description: >
-  根据自然语言描述生成正则表达式，附带可视化解释（铁路图）和
-  交互式测试页面。当用户提到"正则"、"regex"、"匹配模式"、
-  "文本提取"、"字符串匹配"时使用。即使用户只是描述了一种
-  文本模式（如"怎么找出所有邮箱地址"）也应触发。
+description: 根据文本匹配需求编写或解释正则表达式，并按需生成 SVG 铁路图与交互测试页面。用于正则设计、排错与可视化。
 ---
 
 # regex-wizard
+
+Resolve `<skill_dir>` to the directory containing this `SKILL.md`. Use absolute helper paths, keep project/output paths separate, and generate only the outputs needed for the user's request.
+
 
 根据自然语言描述生成正则表达式，附带铁路图可视化和交互式测试页面。
 
@@ -28,7 +27,7 @@ description: >
 根据分析结果编写正则表达式，遵循以下原则：
 1. **正确性优先**：先确保匹配所有正例，再排除反例
 2. **可读性**：合理使用命名捕获组 `(?P<name>...)` 和注释模式 `(?x)`
-3. **性能**：避免灾难性回溯，优先使用占有量词或原子组
+3. **性能**：避免灾难性回溯，仅在目标引擎支持时使用占有量词或原子组
 4. **兼容性**：标注所用语法的引擎兼容性（PCRE / ECMAScript / RE2 等）
 
 输出格式：
@@ -38,12 +37,12 @@ description: >
 标志:      <g/i/m/s/x 及其含义>
 ```
 
-### Step 3: 可视化 —— 铁路图
+### Step 3: 可视化 —— 铁路图（按需）
 
 使用 `scripts/railroad.py` 生成 SVG 铁路图：
 
 ```bash
-python scripts/railroad.py "<regex_pattern>" -o output.svg
+python "<skill_dir>/scripts/railroad.py" "<regex_pattern>" -o output.svg
 ```
 
 颜色编码：
@@ -56,7 +55,7 @@ python scripts/railroad.py "<regex_pattern>" -o output.svg
 
 将生成的 SVG 展示给用户，并逐段解释每个节点的含义。
 
-### Step 4: 交互式测试页面
+### Step 4: 交互式测试页面（按需）
 
 使用 `assets/tester_template.html` 模板生成测试页面：
 1. 将正则表达式预填入输入框
@@ -70,7 +69,7 @@ python scripts/railroad.py "<regex_pattern>" -o output.svg
 
 ### Step 5: 代码片段
 
-为用户目标语言生成即用代码片段。默认提供 Python 和 JavaScript 两种：
+为用户目标语言提供代码片段；以下 Python 和 JavaScript 示例按需选用：
 
 **Python:**
 ```python

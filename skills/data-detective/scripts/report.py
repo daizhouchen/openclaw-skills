@@ -8,9 +8,12 @@ import json
 import html
 import os
 import sys
+import argparse
+import tempfile
+from pathlib import Path
 
-FINDINGS_PATH = "/tmp/data_detective_findings.json"
-REPORT_PATH = "/tmp/data_detective_report.html"
+FINDINGS_PATH = str(Path(tempfile.gettempdir()) / "data_detective_findings.json")
+REPORT_PATH = str(Path(tempfile.gettempdir()) / "data_detective_report.html")
 
 
 def esc(text):
@@ -448,7 +451,11 @@ if (distLabels.length > 0) {{
 
 
 def main():
-    input_path = sys.argv[1] if len(sys.argv) > 1 else FINDINGS_PATH
+    parser = argparse.ArgumentParser(description="Render a Data Detective HTML report.")
+    parser.add_argument("findings", nargs="?", default=FINDINGS_PATH)
+    parser.add_argument("-o", "--output", default=REPORT_PATH)
+    args = parser.parse_args()
+    input_path = args.findings
     if not os.path.isfile(input_path):
         print(f"Findings file not found: {input_path}", file=sys.stderr)
         sys.exit(1)
@@ -458,11 +465,11 @@ def main():
 
     html_content = generate_html(data)
 
-    with open(REPORT_PATH, "w", encoding="utf-8") as f:
+    with open(args.output, "w", encoding="utf-8") as f:
         f.write(html_content)
 
-    print(f"[Data Detective] Report generated: {REPORT_PATH}")
-    file_size = os.path.getsize(REPORT_PATH)
+    print(f"[Data Detective] Report generated: {args.output}")
+    file_size = os.path.getsize(args.output)
     print(f"[Data Detective] Report size: {file_size:,} bytes")
 
 

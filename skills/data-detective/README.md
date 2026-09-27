@@ -108,11 +108,11 @@ python3 scripts/investigate.py path/to/your_data.csv
 python3 scripts/report.py
 
 # Step 3: Open the report
-open /tmp/data_detective_report.html
+open <tempdir>/data_detective_report.html
 ```
 
-The investigation writes its findings to `/tmp/data_detective_findings.json`. The report generator
-reads that JSON and produces `/tmp/data_detective_report.html`.
+The investigation writes its findings to `<tempdir>/data_detective_findings.json`. The report generator
+reads that JSON and produces `<tempdir>/data_detective_report.html`.
 
 ## Report Preview
 
@@ -212,3 +212,5 @@ Please keep changes focused and include test coverage where applicable.
 ## License
 
 MIT
+
+Output paths default to the operating system temporary directory (`<tempdir>`). Use `--output <path>` with either script to choose a separate destination for each run.

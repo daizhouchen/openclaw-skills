@@ -1,55 +1,47 @@
-<!-- daizhouchen-banner-begin -->
-<p align="center">
-  <img src="assets/hero.png" alt="openclaw-skills" width="100%"/>
-</p>
+# OpenClaw Skills
 
-> **11 days, 11 skills — 一次集中实验。10 个 Claude Code Skill 合集。**
->
-> *an 11-day burst of skill experiments — 10 archived in this monorepo.*
-<!-- daizhouchen-banner-end -->
+![Skill 工作方式示意](assets/cover.svg)
 
-# openclaw-skills
+10 个面向开发任务的 `SKILL.md` 技能实验：用指令、脚本与模板处理常见工作。独立的项目管理技能见 [SuperPM](https://github.com/daizhouchen/superpm)。
 
-> 11 days, 11 skills — 2026 年 3 月 31 日开始的一次集中实验。
+## 技能索引
 
-我用十一天的时间从 0 到 1 集中产出了一批 Claude Code Skill，
-然后回头看哪些值得继续做、哪些只是概念验证。
-**这个仓收纳其中 10 个**；剩下一个 [superpm](https://github.com/daizhouchen/superpm) 独立保留。
+| 技能 | 实际用途 |
+|---|---|
+| [env-guardian](skills/env-guardian) | 环境变量引用与配置风险检查，生成示例配置 |
+| [commit-poet](skills/commit-poet) | 根据 Git diff 起草 6 种风格的提交说明 |
+| [regex-wizard](skills/regex-wizard) | 正则表达式、SVG 铁路图与测试页面 |
+| [git-storyteller](skills/git-storyteller) | Git 历史分析与 HTML 时间线报告 |
+| [svg-icon-forge](skills/svg-icon-forge) | 生成、优化和校验 5 种风格的 SVG 图标 |
+| [data-detective](skills/data-detective) | CSV、JSON、Excel 缺失、重复与统计异常分析 |
+| [api-mocker](skills/api-mocker) | 从 OpenAPI 生成简单资源的 Express mock 服务 |
+| [terminal-dashboard](skills/terminal-dashboard) | 从 YAML 配置生成 Rich 终端仪表盘 |
+| [codebase-cartographer](skills/codebase-cartographer) | 静态 import 依赖扫描与 D3.js 代码地图 |
+| [doc-archaeologist](skills/doc-archaeologist) | 文档时效、引用一致性检查与修复建议 |
 
-## 收录
+## 安装一个技能
 
-| 子目录 | 一句话 |
-|--------|--------|
-| [env-guardian](skills/env-guardian) | 环境变量审计 + .env.example 生成 |
-| [commit-poet](skills/commit-poet) | 6 风格 commit message（含鲁迅风、俳句风） |
-| [regex-wizard](skills/regex-wizard) | 自然语言→正则 + railroad diagram |
-| [git-storyteller](skills/git-storyteller) | Git 历史→电影感 HTML 叙事 |
-| [svg-icon-forge](skills/svg-icon-forge) | 自然语言→5 风格 SVG 图标 |
-| [data-detective](skills/data-detective) | CSV/JSON 异常侦探报告 |
-| [api-mocker](skills/api-mocker) | OpenAPI→可跑的 Express mock 服务 |
-| [terminal-dashboard](skills/terminal-dashboard) | Rich 终端 dashboard 生成 |
-| [codebase-cartographer](skills/codebase-cartographer) | D3.js 架构图扫描 |
-| [doc-archaeologist](skills/doc-archaeologist) | 文档过期/失效扫描 + A-F 健康分 |
+仓库根目录不是技能入口；安装所需的 `skills/<name>` 目录。以 Claude Code 为例（Bash / Git Bash）：
 
-## 立场
+```bash
+git clone https://github.com/daizhouchen/openclaw-skills.git
+mkdir -p "$HOME/.claude/skills"
+cp -R openclaw-skills/skills/commit-poet "$HOME/.claude/skills/"
+```
 
-不是每个都要做成产品。这是**实验密度**，不是产品密度。
-当时一天产一个，是为了把 idea throughput 拉满。
-现在回看，几个有继续做的潜力（commit-poet / git-storyteller / svg-icon-forge），
-其余作为参考留档。
+Codex 用户可将目标目录改为 `${CODEX_HOME:-$HOME/.codex}/skills`。 OpenClaw 用户可使用共享技能目录 `~/.openclaw/skills`（[官方说明](https://docs.openclaw.ai/tools/skills)）。安装前检查同名目录，保留已有自定义内容。其他支持 `SKILL.md` 的工具请使用其技能目录。
 
-## 原因
+在目标项目中提出对应任务，例如“根据暂存区 diff 写一条 Conventional Commit 提交说明”。脚本和资产路径以安装后的技能目录为准，工作目录与输出位置由任务决定。
 
-每个子目录在原 README 顶部带 banner 标注其状态。所有子目录共享本仓 MIT License。
-原始 10 个独立仓在 monorepo 验证完整后，已 archive 不再独立维护——历史保留可追溯。
+## 运行要求与边界
+
+- Python 脚本建议使用 Python 3.10+。数据分析需要 `pandas numpy`（Excel 另需 `openpyxl` / `xlrd`），仪表盘需要 `rich psutil pyyaml`，YAML API 规范需要 `pyyaml`。
+- Git 分析需要 Git；提交说明助手使用 Bash；API mock 生成器需要 Node.js，生成的服务依赖 Express。
+- 这些是实验性工具，详细参数见各技能目录。静态扫描和统计报告提供线索，结果需结合项目上下文判断。
+- Mock 服务用于本地联调，不提供生产鉴权；部分 HTML 图表依赖 CDN。生成文件、运行服务和修改项目应遵循当前请求范围。
+
+原始独立仓库与子目录内的来源、状态说明保留，后续整理在本 monorepo 进行。
 
 ## License
 
-MIT
-
----
----
-<!-- daizhouchen-footer-begin -->
-
-Part of [**daizhouchen 实验集**](https://github.com/daizhouchen) → 一个 AI 应用创造者的实验现场。
-<!-- daizhouchen-footer-end -->
+[MIT](LICENSE)

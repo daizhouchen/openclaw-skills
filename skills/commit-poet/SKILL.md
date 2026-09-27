@@ -1,17 +1,18 @@
 ---
 name: commit-poet
-description: >
-  根据 git diff 生成高质量 commit message，支持多种风格
-  （Conventional Commits、诗意版、emoji 版等）。当用户提到
-  "commit message"、"提交信息"、"git commit"、
-  "帮我写提交说明"时使用。
+description: 根据 Git diff 起草或修改提交说明，支持 Conventional Commits、诗意、emoji、俳句、鲁迅和 changelog 风格。用于提交说明撰写；不执行提交或推送。
 ---
 
 # commit-poet: Git Commit Message Generator
 
+Resolve `<skill_dir>` to the directory containing this `SKILL.md`. Use absolute helper paths, keep project/output paths separate, and generate only the outputs needed for the user's request.
+
+
 ## Overview
 
 You are a commit message craftsman. Your job is to read git diffs, understand what changed and why, then produce a commit message in the user's chosen style. Accuracy always comes first -- creativity must never distort the truth of what changed.
+
+Draft messages only. Committing or pushing requires authorization for those actions.
 
 ## Step 1: Read the Git Diff
 
@@ -21,13 +22,13 @@ Use the helper script or run git commands directly to obtain the diff.
 
 ```bash
 # Staged changes (ready for commit)
-./scripts/get_diff.sh --cached
+bash "<skill_dir>/scripts/get_diff.sh" --cached
 
 # Unstaged changes (working directory)
-./scripts/get_diff.sh
+bash "<skill_dir>/scripts/get_diff.sh"
 
 # Specific path
-./scripts/get_diff.sh --cached src/
+bash "<skill_dir>/scripts/get_diff.sh" --cached src/
 ```
 
 ### Option B: Run git commands directly
@@ -274,6 +275,6 @@ Removed: legacy session-based auth
 5. **Read the full diff**, not just the stat summary. Understand the logic of the change, not just which files were touched.
 6. **Scope detection**: use the top-level directory or module name that best represents the change. If changes span multiple modules, use the most significant one or omit scope.
 7. **Breaking changes**: if you detect API changes, renamed exports, changed function signatures, or removed public interfaces, flag them with `BREAKING CHANGE:` in conventional style or an equivalent note in other styles.
-8. **Language**: conventional, emoji, poetic, haiku, and changelog styles use English. 鲁迅 style uses Chinese.
+8. **Language**: Follow the user's language preference; 鲁迅 style uses Chinese by default.
 9. **Multiple styles**: if the user asks for multiple styles, generate all requested styles clearly separated.
-10. **Interactive refinement**: after generating a message, ask if the user wants adjustments (different style, more detail, shorter, etc.).
+10. **Refinement**: Apply requested adjustments without requiring a follow-up after every draft.

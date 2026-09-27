@@ -1,13 +1,12 @@
 ---
 name: git-storyteller
-description: >
-  将 Git 仓库的提交历史转化为可视化叙事报告，包含时间线、
-  里程碑、贡献者画像和代码演进故事。当用户提到"项目历史"、
-  "git 可视化"、"代码故事"、"贡献分析"、"项目回顾"时使用。
-  即使用户只是说"帮我看看这个仓库的历史"也应该触发。
+description: 分析 Git 仓库历史并生成包含时间线、贡献统计和里程碑的 HTML 报告。用于项目历史回顾或 Git 历史可视化。
 ---
 
 # Git Storyteller
+
+Resolve `<skill_dir>` to the directory containing this `SKILL.md`. Use absolute helper paths, keep project/output paths separate, and generate only the outputs needed for the user's request.
+
 
 Transform a Git repository's commit history into a visual narrative HTML report.
 
@@ -26,7 +25,7 @@ Follow these steps in order:
 Run the analysis script to collect and process git history data:
 
 ```bash
-python3 /path/to/git-storyteller/scripts/analyze.py <repo-path>
+python3 "<skill_dir>/scripts/analyze.py" <repo-path>
 ```
 
 This produces a `git-story-data.json` file in the current working directory containing:
@@ -42,7 +41,7 @@ This produces a `git-story-data.json` file in the current working directory cont
 Generate the visual HTML report from the analysis data:
 
 ```bash
-python3 /path/to/git-storyteller/scripts/render.py [path-to-json]
+python3 "<skill_dir>/scripts/render.py" [path-to-json]
 ```
 
 If no JSON path is given, it reads `git-story-data.json` from the current directory.
@@ -62,6 +61,6 @@ Tell the user:
 ## Important Notes
 
 - The analysis limits history to the most recent 2 years to handle large repos efficiently.
-- The HTML report is fully standalone (no external dependencies except Chart.js CDN).
+- The HTML report is a single HTML file; charts require the Chart.js CDN.
 - Dark theme with responsive design for comfortable viewing.
 - All scripts require Python 3.7+ and Git installed on the system.
